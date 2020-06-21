@@ -9,6 +9,7 @@ import numpy as np
 
 import pandas as pd   
 
+from typing import List, Dict
 
 # Requiere las siguientes bibliotecas
 # from sklearn.base import BaseEstimator, TransformerMixin
@@ -20,22 +21,21 @@ import pandas as pd
 # from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
   
 class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
+    """Hiperparamétros de la clase transformación 
+
+        Args:
+        --------
+        show_logs (bool, optional): True para mostrar los logs del tranformador. Defaults to False.
+        remove_columns (bool, optional): Variable booleana para eliminar las columnas pasadas ya que representan textos en vez de números. Defaults to True.
+        encode_label (bool, optional): Para codificar las columnas a ordinal econder. Defaults to False.
+        drop_nan (bool, optional): Elimina los nulos, si esto es false entonces imputa a más frecuente. Defaults to True.
+        order_columns (bool, optional): regresa los resultados ordenados por las columnas. Defaults to False.
+        catalogs_dict ([type], optional):  Dicionario con los valores posibles de cada columns_1hot, debe estar en orden la clave es la posición de columns_1hot ejemplo-> { 0:  ['Colision', 'Cristales', 'Robo', 'Responsabilidad Civil']} si esta variable no es proporcionada se tomará de las etiquitas encontradas en cada columna, es util cuando se quiere transformar solo un registro, . Defaults to None.
+        standarize (bool, optional): Normaliza los resultados. Defaults to False.
+    """
   
     
     def __init__(self, show_logs = False, remove_columns = True,  encode_label = False, drop_nan=True, order_columns=False, catalogs_dict=None, standarize=False): 
-      """Hiperparamétros de la clase transformación 
-      
-      Keyword Arguments:
-          show_logs {bool} -- True para mostrar los logs del tranformador (default: {False})
-          remove_columns {bool} -- Variable booleana para eliminar las columnas pasadas ya que representan textos en vez de números (default: {True})
-          encode_label {bool} -- Para codificar las columnas a ordinal econder (default: {False})
-          drop_nan {bool} -- Elimina los nulos, si esto es false entonces imputa a más frecuente (default: {True})
-          order_columns {bool} -- [description] (default: {False})
-          catalogs_dict {[type]} -- Dicionario con los valores posibles de cada columns_1hot, debe estar en orden la clave es la posición de columns_1hot ejemplo-> { 0:  ['Colision', 'Cristales', 'Robo', 'Responsabilidad Civil']}
-                    si esta variable no es proporcionada se tomará de las etiquitas encontradas en cada columna, es util cuando se quiere transformar solo un registro, 
-          standarize {bool} -- [description] (default: {False})
-      """
-
       self.show_logs = show_logs
       self.remove_columns = remove_columns
       self.encode_label = encode_label
@@ -130,7 +130,7 @@ class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
       return df_transformed
 
 
-def eval_pred_results(y_real,y_pred):
+def eval_pred_results(y_real,y_pred) ->(str, str):
   mae = mean_absolute_error(y_real, y_pred)
   mse = mean_squared_error(y_real, y_pred)
   rmse = np.sqrt(mse)
