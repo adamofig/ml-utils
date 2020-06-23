@@ -1,41 +1,28 @@
-
-### Clases 
-
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, make_scorer, accuracy_score
 import numpy as np
-
 import pandas as pd   
 
-from typing import List, Dict
-
-# Requiere las siguientes bibliotecas
-# from sklearn.base import BaseEstimator, TransformerMixin
-# from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
-
-# @title Clase para convertir todos los datasets.
-# Requiere las siguientes bibliotecas
-# from sklearn.base import BaseEstimator, TransformerMixin
-# from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
   
 class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
-    """Hiperparamétros de la clase transformación 
-
-        Args:
-        --------
-        show_logs (bool, optional): True para mostrar los logs del tranformador. Defaults to False.
-        remove_columns (bool, optional): Variable booleana para eliminar las columnas pasadas ya que representan textos en vez de números. Defaults to True.
-        encode_label (bool, optional): Para codificar las columnas a ordinal econder. Defaults to False.
-        drop_nan (bool, optional): Elimina los nulos, si esto es false entonces imputa a más frecuente. Defaults to True.
-        order_columns (bool, optional): regresa los resultados ordenados por las columnas. Defaults to False.
-        catalogs_dict ([type], optional):  Dicionario con los valores posibles de cada columns_1hot, debe estar en orden la clave es la posición de columns_1hot ejemplo-> { 0:  ['Colision', 'Cristales', 'Robo', 'Responsabilidad Civil']} si esta variable no es proporcionada se tomará de las etiquitas encontradas en cada columna, es util cuando se quiere transformar solo un registro, . Defaults to None.
-        standarize (bool, optional): Normaliza los resultados. Defaults to False.
-    """
   
     
     def __init__(self, show_logs = False, remove_columns = True,  encode_label = False, drop_nan=True, order_columns=False, catalogs_dict=None, standarize=False): 
+      """Hiperparamétros de la clase transformación 
+      
+      Keyword Arguments:
+          show_logs {bool} -- True para mostrar los logs del tranformador (default: {False})
+          remove_columns {bool} -- Variable booleana para eliminar las columnas pasadas ya que representan textos en vez de números (default: {True})
+          encode_label {bool} -- Para codificar las columnas a ordinal econder (default: {False})
+          drop_nan {bool} -- Elimina los nulos, si esto es false entonces imputa a más frecuente (default: {True})
+          order_columns {bool} -- [description] (default: {False})
+          catalogs_dict {[type]} -- Dicionario con los valores posibles de cada columns_1hot, debe estar en orden la clave es la posición de columns_1hot ejemplo-> { 0:  ['Colision', 'Cristales', 'Robo', 'Responsabilidad Civil']}
+                    si esta variable no es proporcionada se tomará de las etiquitas encontradas en cada columna, es util cuando se quiere transformar solo un registro, 
+          standarize {bool} -- [description] (default: {False})
+      """
+
       self.show_logs = show_logs
       self.remove_columns = remove_columns
       self.encode_label = encode_label
@@ -66,11 +53,10 @@ class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
 
     def transform(self, X, columns_1hot, skip_normalization=[]):
       """Método final para tranformar cualquier dataframe,
-      
+
       Arguments:
           X {[type]} -- [description]
           columns_1hot {[List]} -- Lista de columnas para codificar a onehotEncoding 
-      
       """
 
       self.log("Iniciando el tranformador")
@@ -130,7 +116,7 @@ class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
       return df_transformed
 
 
-def eval_pred_results(y_real,y_pred) ->(str, str):
+def eval_pred_results(y_real,y_pred):
   mae = mean_absolute_error(y_real, y_pred)
   mse = mean_squared_error(y_real, y_pred)
   rmse = np.sqrt(mse)
@@ -146,10 +132,19 @@ def eval_pred_results(y_real,y_pred) ->(str, str):
   df_score["pass_rsme"] = df_score["error_abs"] <= rmse
   df_score["pass_accurate"] = df_score["real"] == round(df_score["predicted"])
 
-  pass_mae_dict = df_score.pass_mae.value_counts().to_dict()
-  pass_rsme_dict = df_score.pass_rsme.value_counts().to_dict()
-  pass_accurate_dict = df_score.pass_accurate.value_counts().to_dict()
+  def set_dict_default(d):
+    # para obtener los porcentajes, se hace un count de cuantos pasan el score y obtenemos un diccionario con True, y False
+    # a veces si todos lo pasan solo hay True, la llave False no existe, esto es para darle un valor default
+    d.setdefault(True, 0)
+    d.setdefault(False, 0)
+    return d
 
+    
+  pass_mae_dict = set_dict_default(df_score.pass_mae.value_counts().to_dict())
+  pass_rsme_dict = set_dict_default(df_score.pass_rsme.value_counts().to_dict())
+  pass_accurate_dict = set_dict_default(df_score.pass_accurate.value_counts().to_dict())
+
+  print(pass_mae_dict)
   mae_percent = pass_mae_dict[True] / (pass_mae_dict[True] + pass_mae_dict[False])
   rsme_percent = pass_rsme_dict[True] / (pass_rsme_dict[True] + pass_rsme_dict[False])
   accurate_percent = pass_accurate_dict[True] / (pass_accurate_dict[True] + pass_accurate_dict[False])
@@ -162,7 +157,7 @@ def eval_pred_results(y_real,y_pred) ->(str, str):
   df_score["a_criteria_proportional"] = .5 * rmse + 2.5 * rmse * df_score["porcentage_proportional"]
 
   df_score["pass_acp"] = df_score["error_abs"] <= df_score["porcentage_proportional"]
-  pass_acp_dict = df_score.pass_acp.value_counts().to_dict()
+  pass_acp_dict = set_dict_default(df_score.pass_acp.value_counts().to_dict())
   acp_percent = pass_acp_dict[True] / (pass_acp_dict[True] + pass_acp_dict[False])
 
   print(f"\nError Absoluto Medio: '{mae}' ")
