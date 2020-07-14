@@ -10,7 +10,7 @@ class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
   
     
     def __init__(self, show_logs = False, remove_columns = True,  encode_label = False, drop_nan=True, order_columns=False, catalogs_dict=None, standarize=False): 
-      """Hiperparamétros de la clase transformación 
+      """Hiperparamétros de la clase  
       
       Keyword Arguments:
           show_logs {bool} -- True para mostrar los logs del tranformador (default: {False})
@@ -21,6 +21,18 @@ class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
           catalogs_dict {[type]} -- Dicionario con los valores posibles de cada columns_1hot, debe estar en orden la clave es la posición de columns_1hot ejemplo-> { 0:  ['Colision', 'Cristales', 'Robo', 'Responsabilidad Civil']}
                     si esta variable no es proporcionada se tomará de las etiquitas encontradas en cada columna, es util cuando se quiere transformar solo un registro, 
           standarize {bool} -- [description] (default: {False})
+      
+      Ejemplos de uso
+      -------
+      codificar a one hot 2 columnas ya que son catalogo: entonces  utiliza el parámetro columns_1hot=["tipoSiniestro", "estado"]
+      necesito códigicar un registro, pero que respete que existen 2 categorías, entonces utiliza el parametro catalogs_dict= { 0 : ["robo", "colision"], 1: ["oaxaca","puebla] }
+      con esto cada columna a encoder de columns_1hot le corresponde un diccionario en ese orden. de modo que el resultado contempla, las columnas faltantes se muestra 
+      un ejemplo sin diccionario y con diccionario de catalogo.
+
+      |robo|puebla|   ->    |robo|colision|oaxaca|puebla|
+      |   1|  1   |   ->    |  1 |   0    | 0    |    1 |
+
+      Este caso es bastante util en la codificación para predición.  
       """
 
       self.show_logs = show_logs
@@ -117,11 +129,13 @@ class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
 
 
 def eval_pred_results(y_real,y_pred):
+  # Se definen los erroes
   mae = mean_absolute_error(y_real, y_pred)
   mse = mean_squared_error(y_real, y_pred)
   rmse = np.sqrt(mse)
   r2 = r2_score(y_real, y_pred)
 
+  # Se van a calculos los porcentajes de satisfacen el error
   df_score = pd.DataFrame()
   df_score["real"] = y_real
   df_score["predicted"] = y_pred
@@ -129,7 +143,7 @@ def eval_pred_results(y_real,y_pred):
   df_score["error_abs"] = abs(df_score["error"])
 
   df_score["pass_mae"] = df_score["error_abs"] <= mae
-  df_score["pass_rsme"] = df_score["error_abs"] <= rmse
+  df_score["pass_rmse"] = df_score["error_abs"] <= rmse
   df_score["pass_accurate"] = df_score["real"] == round(df_score["predicted"])
 
   def set_dict_default(d):
@@ -141,13 +155,16 @@ def eval_pred_results(y_real,y_pred):
 
     
   pass_mae_dict = set_dict_default(df_score.pass_mae.value_counts().to_dict())
-  pass_rsme_dict = set_dict_default(df_score.pass_rsme.value_counts().to_dict())
+  pass_rmse_dict = set_dict_default(df_score.pass_rmse.value_counts().to_dict())
   pass_accurate_dict = set_dict_default(df_score.pass_accurate.value_counts().to_dict())
 
-  print(pass_mae_dict)
-  mae_percent = pass_mae_dict[True] / (pass_mae_dict[True] + pass_mae_dict[False])
-  rsme_percent = pass_rsme_dict[True] / (pass_rsme_dict[True] + pass_rsme_dict[False])
-  accurate_percent = pass_accurate_dict[True] / (pass_accurate_dict[True] + pass_accurate_dict[False])
+  total_records=df_score.shape[0]
+  mae_records=pass_mae_dict[True]
+  rmse_records = pass_rmse_dict[True]
+  #mae_count = 
+  mae_percent = mae_records / total_records
+  rmse_percent = rmse_records / total_records
+  accurate_percent = pass_accurate_dict[True] / total_records
 
   stac_desc = df_score.describe()
   min_value_pred = stac_desc.loc[["min"],["predicted"]].values[0][0]
@@ -166,11 +183,12 @@ def eval_pred_results(y_real,y_pred):
 
   print(f"Valores predichos, Min: {min_value_pred}, Max: {max_value_pred}")
   print(f"\Porcentaje de Aceptacion Proporcional:   {round(acp_percent* 100,2)}%")
-  print(f"Porcentaje por debajo de Error Cuadratico Medio:   {round(rsme_percent* 100,2)}%")
+  print(f"Porcentaje por debajo de Error Cuadratico Medio:   {round(rmse_percent* 100,2)}%")
   print(f"Porcentaje por debajo con Error Absoluto Medio:     {round(mae_percent* 100,2)}%")
   print(f"Porcentaje Con error 0 :                       {round(accurate_percent* 100,2)}%")
   print(f"* {pass_mae_dict[True]} registros satifacen el error  absoluto representa el {round(mae_percent * 100,2)}%")
-  print(f"* {pass_rsme_dict[True]} registros satifacen el error  cuadratico medio representa el {round(rsme_percent * 100,2)}%")
+  print(f"* {pass_rmse_dict[True]} registros satifacen el error  cuadratico medio representa el {round(rmse_percent * 100,2)}%")
   print(f"Presición Coef Determinación (Mejora de varación respecto a media): '{r2}'")
-  dict_results = {"min_value_pred":min_value_pred, "max_value_pred":max_value_pred,  "mae":mae, "mae_percent":mae_percent, "mse":mse, "rmse":rmse , "rsme_percent":rsme_percent,  "acp_percent": acp_percent , "accurate_percent":accurate_percent , "r2":r2  }
+  dict_results = {"min_value_pred":min_value_pred, "max_value_pred":max_value_pred,  "mae":mae, "mae_percent":mae_percent, "mse":mse, "rmse":rmse , "rmse_percent":rmse_percent,  "acp_percent": acp_percent , 
+                  "accurate_percent":accurate_percent , "r2":r2, "total_records":total_records, "mae_records": mae_records, "rmse_records":rmse_records  }
   return dict_results, df_score
