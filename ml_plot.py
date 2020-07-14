@@ -1,7 +1,7 @@
 
 import plotly.graph_objects as go
 
-def plot_time_comparing(df: pd.DataFrame, date: str, target: str, pred_target: str):
+def plot_time_comparing(df, date, target, pred_target):
 
   try:
     fig = go.Figure()
