@@ -128,7 +128,7 @@ class UniversalTransformerEncoder(BaseEstimator, TransformerMixin):
       return df_transformed
 
 
-def eval_pred_results(y_real,y_pred):
+def eval_pred_results(y_real,y_pred, show_resume=False):
   # Se definen los erroes
   mae = mean_absolute_error(y_real, y_pred)
   mse = mean_squared_error(y_real, y_pred)
@@ -177,18 +177,20 @@ def eval_pred_results(y_real,y_pred):
   pass_acp_dict = set_dict_default(df_score.pass_acp.value_counts().to_dict())
   acp_percent = pass_acp_dict[True] / (pass_acp_dict[True] + pass_acp_dict[False])
 
-  print(f"\nError Absoluto Medio: '{mae}' ")
-  print(f"Error Cuadrático medio: '{mse}''")
-  print(f"Raiz Error Cuadrático medio: '{rmse}'")
-
-  print(f"Valores predichos, Min: {min_value_pred}, Max: {max_value_pred}")
-  print(f"\Porcentaje de Aceptacion Proporcional:   {round(acp_percent* 100,2)}%")
-  print(f"Porcentaje por debajo de Error Cuadratico Medio:   {round(rmse_percent* 100,2)}%")
-  print(f"Porcentaje por debajo con Error Absoluto Medio:     {round(mae_percent* 100,2)}%")
-  print(f"Porcentaje Con error 0 :                       {round(accurate_percent* 100,2)}%")
-  print(f"* {pass_mae_dict[True]} registros satifacen el error  absoluto representa el {round(mae_percent * 100,2)}%")
-  print(f"* {pass_rmse_dict[True]} registros satifacen el error  cuadratico medio representa el {round(rmse_percent * 100,2)}%")
-  print(f"Presición Coef Determinación (Mejora de varación respecto a media): '{r2}'")
+  if show_resume:
+    print(f"\nError Absoluto Medio: '{mae}' ")
+    print(f"Error Cuadrático medio: '{mse}''")
+    print(f"Raiz Error Cuadrático medio: '{rmse}'")
+    print(f"Valores predichos, Min: {min_value_pred}, Max: {max_value_pred}")
+    print(f"Porcentaje de Aceptacion Proporcional:   {round(acp_percent* 100,2)}%")
+    print(f"Porcentaje por debajo de Error Cuadratico Medio:   {round(rmse_percent* 100,2)}%")
+    print(f"Porcentaje por debajo con Error Absoluto Medio:     {round(mae_percent* 100,2)}%")
+    print(f"Porcentaje Con error 0 :                       {round(accurate_percent* 100,2)}%")
+    print(f"* {pass_mae_dict[True]} registros satifacen el error  absoluto representa el {round(mae_percent * 100,2)}%")
+    print(f"* {pass_rmse_dict[True]} registros satifacen el error  cuadratico medio representa el {round(rmse_percent * 100,2)}%")
+    print(f"Presición Coef Determinación (Mejora de varación respecto a media): '{r2}'")
+  
   dict_results = {"min_value_pred":min_value_pred, "max_value_pred":max_value_pred,  "mae":mae, "mae_percent":mae_percent, "mse":mse, "rmse":rmse , "rmse_percent":rmse_percent,  "acp_percent": acp_percent , 
                   "accurate_percent":accurate_percent , "r2":r2, "total_records":total_records, "mae_records": mae_records, "rmse_records":rmse_records  }
+  
   return dict_results, df_score
