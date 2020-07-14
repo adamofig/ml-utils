@@ -31,27 +31,23 @@ def plot_time_comparing(df: pd.DataFrame, date: str, target: str, pred_target: s
 
 
 def plot_ml_results(eval_results):
-   """Gráfica los resultados de una evaluación de modelo  
-      
-      Keyword Arguments:
-          eval_results {dict} -- Diccionario de resultados de evualuación 
-      
-      Ejemplo
-      ------
-      {'accurate_percent': 0.05394190871369295,
-      'acp_percent': 0.0,
-      'mae': 46.6370622406639,
-      'mae_percent': 0.7551867219917012,
-      'mse': 9534.3077593361,
-      'r2': 0.9668950199803521,
-      'rmse': 97.64377993162749,
-      'rsme_percent': 0.8506224066390041
-      'total_records':190}
-
-    """
-
-  import plotly.graph_objects as go
-
+  """Gráfica los resultados de una evaluación de modelo  
+    
+    Keyword Arguments:
+        eval_results {dict} -- Diccionario de resultados de evualuación 
+    
+    Ejemplo
+    ------
+    {'accurate_percent': 0.05394190871369295,
+    'acp_percent': 0.0,
+    'mae': 46.6370622406639,
+    'mae_percent': 0.7551867219917012,
+    'mse': 9534.3077593361,
+    'r2': 0.9668950199803521,
+    'rmse': 97.64377993162749,
+    'rsme_percent': 0.8506224066390041
+    'total_records':190}
+  """
   x_data = [eval_results["rmse_percent"], eval_results["mae_percent"] , eval_results["accurate_percent"], eval_results["acp_percent"] ]
   y_data = ["rsme" , "mae", "accurate", "acp"]
 
